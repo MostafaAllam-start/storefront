@@ -1,30 +1,40 @@
 from django.db import models
 from django.utils.text import slugify
-
+from django.core.validators import MinValueValidator
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
-    featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')     
+    featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+') # this + in the realated_name means don't create any realted name for this relation     
+
+    class Meta:
+        ordering = ('title',)
+
+    def __str__(self) -> str:
+        return self.title
+
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField()
-    description = models.TextField()
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField() 
+    unit_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(1)])
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(
         Collection, on_delete=models.SET_NULL, null='True')
-    promotions = models.ManyToManyField(Promotion)
+    promotions = models.ManyToManyField(Promotion, null=True,blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         super(Product, self).save(*args,*kwargs)
     
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
 class Customer(models.Model):
@@ -43,6 +53,8 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     membership = models.CharField(choices=MEMBERSHIP_CHOICES, max_length=1, default=MEMBERSHIP_BRONZE)
 
+    def __str__(self) -> str:
+        return self.first_name+" "+self.last_name
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
@@ -52,6 +64,7 @@ class Address(models.Model):
     customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE
     )
+
     
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
@@ -67,7 +80,10 @@ class Order(models.Model):
     customer = models.ForeignKey(
         Customer, on_delete=models.PROTECT
     )
-
+    class Meta:
+        ordering = ('placed_at',)
+    def __str__(self):
+        return f"Order: {self.pk} "
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
@@ -77,6 +93,9 @@ class OrderItem(models.Model):
 
 class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ('created_at',)
 
 class CartItem(models.Model):
     cart = models.ForeignKey(
@@ -84,3 +103,4 @@ class CartItem(models.Model):
     )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+    

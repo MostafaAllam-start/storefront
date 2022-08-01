@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     
     # Local Apps
     'store',
+    'store_custom', #this app is plays as a connection between store app and tags app as tags app is a plugable app
     'tags',
     'likes',
 
