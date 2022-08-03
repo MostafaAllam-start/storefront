@@ -9,11 +9,11 @@ class Collection(models.Model):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+') # this + in the realated_name means don't create any realted name for this relation     
 
-    class Meta:
-        ordering = ('title',)
-
     def __str__(self) -> str:
         return self.title
+    class Meta:
+        ordering = ('id',)
+
 
 
 class Product(models.Model):
@@ -80,11 +80,11 @@ class Order(models.Model):
     customer = models.ForeignKey(
         Customer, on_delete=models.PROTECT
     )
-    class Meta:
-        ordering = ('placed_at',)
     def __str__(self):
         return f"Order: {self.pk} "
     
+    class Meta:
+        ordering = ('placed_at',)
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)

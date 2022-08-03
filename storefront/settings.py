@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # Third party packages
     'debug_toolbar',
+    'rest_framework',
     
     # Local Apps
     'store',
