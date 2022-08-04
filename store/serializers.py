@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
 from store.models import Product, Collection
+
 class ProductSerializer(serializers.ModelSerializer):
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
 

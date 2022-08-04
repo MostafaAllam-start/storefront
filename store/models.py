@@ -30,10 +30,6 @@ class Product(models.Model):
         Collection, on_delete=models.SET_NULL, null='True')
     promotions = models.ManyToManyField(Promotion, null=True,blank=True)
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
-        super(Product, self).save(*args,*kwargs)
-    
     def __str__(self) -> str:
         return self.title
 
