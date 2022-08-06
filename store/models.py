@@ -65,11 +65,11 @@ class Address(models.Model):
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
     PAYMENT_STATUS_COMPLETED = 'C'
-    PAYMENT_STATUS_FAILD = 'F'
+    PAYMENT_STATUS_FAILED = 'F'
     PAYMENT_STATUS = [
         (PAYMENT_STATUS_PENDING , 'pending'),
         (PAYMENT_STATUS_COMPLETED, 'completed'),
-        (PAYMENT_STATUS_FAILD, 'faild'),
+        (PAYMENT_STATUS_FAILED, 'faild'),
     ]
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices=PAYMENT_STATUS, default=PAYMENT_STATUS_PENDING)
