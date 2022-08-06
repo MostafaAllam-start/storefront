@@ -1,12 +1,22 @@
+from rest_framework import status, viewsets 
+from rest_framework.response import Response 
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import OrderItem, Product, Collection, Review 
 from .serializers import CollectionSerializer, ProductSerializer, ReviewSerializer
-from rest_framework.response import Response 
-from rest_framework import status
-from rest_framework import viewsets
-
+from .filters import ProductFilter
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
+
+    # def get_queryset(self):
+    #     queryset = Product.objects.all()
+    #     collection_id = self.request.query_params.get('collection_id')
+    #     if collection_id is not None:
+    #         queryset = queryset.filter(collection_id=collection_id)
+    #     return queryset
+        
 
     def get_serializer_conntext(self):
         return{'request', self.request}

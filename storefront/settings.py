@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # Third party packages
     'debug_toolbar',
     'rest_framework',
+    'django_filters',
     
     # Local Apps
     'store',
