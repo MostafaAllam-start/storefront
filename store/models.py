@@ -32,6 +32,13 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.title
+class Review(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
