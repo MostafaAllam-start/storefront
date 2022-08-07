@@ -1,6 +1,6 @@
 from django.db import models
-from django.utils.text import slugify
 from django.core.validators import MinValueValidator
+from uuid import uuid4
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
@@ -95,15 +95,32 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=6,decimal_places=2)
 
 class Cart(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.customer} Cart'
     class Meta:
         ordering = ('created_at',)
 
 class CartItem(models.Model):
     cart = models.ForeignKey(
-        Cart, on_delete=models.CASCADE
+        Cart, 
+        on_delete=models.CASCADE,
+        related_name='items'
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField()
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE
+    )
+    quantity = models.PositiveSmallIntegerField(
+        validators = [MinValueValidator(1)]
+    )
+
+    def __str__(self):
+        return f'{self.product}'
+    class Meta:
+        unique_together = [['cart', 'product']] # For each cart the product should be unique
+    
     

@@ -4,7 +4,7 @@ from django.utils.html import format_html, urlencode
 from django.http import HttpRequest
 from django.urls import reverse
 from typing import Optional
-from .models import Collection, Product, Customer, Order, OrderItem
+from .models import Cart, CartItem, Collection, Product, Customer, Order, OrderItem
 from tags.models import TaggedItem
 admin.site.site_header = "StoreFront"
 admin.site.index_title = "Admin"
@@ -85,11 +85,26 @@ class OrderItemInline(admin.TabularInline):
     model = OrderItem
     min_num = 1
     max_num = 10 # the minimum and maxmum number of products the order should have 
-    extra = 0 # the number of rows in the table to be displayed
+    extra = 0 # the number of extra rows in the table to be displayed
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['customer',]
+    autocomplete_fields = ['customer',] # for searching for a customer
     inlines = [OrderItemInline]
     list_display = ['placed_at', 'payment_status','customer']
     list_per_page = 10  
     list_select_related = ['customer']
+
+class CartItemInline(admin.TabularInline):
+    autocomplete_fields = ['product',]
+    model = CartItem
+    extra = 0
+    min_num: 1
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['customer']
+    list_display =  ['id', 'created_at',]
+    list_per_page = 10
+    inlines = [
+        CartItemInline,
+    ]
+    
