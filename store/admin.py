@@ -61,11 +61,13 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'membership','orders_count']
-    list_editable = ['membership',]
+    list_display = ['first_name', 'last_name', 'email', 'membership','orders_count']
+    list_editable = ['membership']
     list_per_page = 10
-    ordering = ['first_name', 'last_name',]
+    list_select_related = ['user']
+    ordering = ['user__first_name', 'user__last_name',]
     search_fields = ['first_name__istartswith', 'last_name__istartswith',]
+    autocomplete_fields = ['user']
     # Like we did in collection we want to go to customer orders page when click on the order numbers
     @admin.display(ordering='orders_count')
     def orders_count(self, customer):
