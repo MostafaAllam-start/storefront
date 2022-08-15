@@ -72,6 +72,9 @@ class Customer(models.Model):
     
     class Meta:
         ordering = ['user__first_name', 'user__last_name']
+        permissions = [
+            ('view_history', 'Can view history')
+        ]
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
@@ -103,7 +106,7 @@ class Order(models.Model):
     class Meta:
         ordering = ('placed_at',)
         permissions = [
-            ('cancel_order', 'Can cancel Order')
+            ('cancel_order', 'Can cancel Order')                
         ]
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
