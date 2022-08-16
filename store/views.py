@@ -1,18 +1,17 @@
-from typing import get_origin
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import status, viewsets, mixins
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response 
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .paginations import DefaultPagination
-from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer
-from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review 
+from .serializers import CreateOrderSerializer, AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer, UpdateOrderSerializer
+from .models import Cart, CartItem, Customer, Order, OrderItem, Product, Collection, Review 
 from .filters import ProductFilter
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -35,6 +34,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+
     def get_queryset(self):
         return Review.objects.filter(product_id=self.kwargs['product_pk'])
 
@@ -45,6 +45,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.prefetch_related('product_set').all()        
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
+
     def destroy (self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs['pk']).count() > 0:
             return Response({'error':'This Collection cannot be deleted as it has some associated prodcuts'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -92,10 +93,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
         return Response('ok')
-        
+
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
-        (customer, create) = Customer.objects.get_or_create(user_id=request.user.id)
+        customer = get_object_or_404(Customer, user_id=request.user.id)
         if request.method == 'GET':
             serializer = CustomerSerializer(customer)
             return Response(serializer.data)
@@ -104,3 +105,36 @@ class CustomerViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.validated_data)
 
+class OrderViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'option']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Order.objects.prefetch_related('items__product').all()
+        customer = get_object_or_404(Customer, user_id=user.id)
+        return Order.objects.filter(customer_id=customer.id)
+        
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateOrderSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateOrderSerializer
+        return OrderSerializer    
+
+    def get_permissions(self):
+        if self.request.method in ['PATCH', 'DELETE']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+                        data=request.data,
+                        context={'user_id' : request.user.id})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    
+    

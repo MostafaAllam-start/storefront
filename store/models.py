@@ -57,7 +57,9 @@ class Customer(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return self.user.first_name+" "+self.user.last_name
+        if self.user.first_name and self.user.last_name:
+            return self.user.first_name+" "+self.user.last_name
+        return self.user.username
     
     @admin.display(ordering='user__first_name')
     def first_name(self):
@@ -109,7 +111,7 @@ class Order(models.Model):
             ('cancel_order', 'Can cancel Order')                
         ]
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6,decimal_places=2)

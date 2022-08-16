@@ -1,11 +1,12 @@
 from django.urls import path, re_path,include
-from store.views import CartItemViewSet, CartViewSet, CustomerViewSet, ProductViewSet, ReviewViewSet, CollectionViewSet
+from store.views import CartItemViewSet, CartViewSet, CustomerViewSet, OrderViewSet, ProductViewSet, ReviewViewSet, CollectionViewSet
 from rest_framework_nested import routers
 router = routers.DefaultRouter()
 router.register('products', ProductViewSet, basename='products')
 router.register('collections', CollectionViewSet)
 router.register('cart', CartViewSet)
 router.register('customer', CustomerViewSet)
+router.register('orders', OrderViewSet, basename='orders')
 #nested router to get the review of each prodcut
 product_router = routers.NestedSimpleRouter(router, 'products', lookup='product')
 product_router.register('reviews', ReviewViewSet,  basename='product-reviews')
