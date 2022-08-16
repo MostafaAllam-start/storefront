@@ -3,6 +3,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import Order, OrderItem, Product, Collection, Review, Cart, CartItem, Customer
+from .signals import order_created
 class ProductSerializer(serializers.ModelSerializer):
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     class Meta:
@@ -144,6 +145,9 @@ class CreateOrderSerializer(serializers.Serializer):
                         ]
             OrderItem.objects.bulk_create(order_items)
             Cart.objects.filter(pk=cart_id).delete()
+
+            # Fire the order_created signal
+            order_created.send_robust(self.__class__, order=order)
             return order
 
 
