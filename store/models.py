@@ -34,6 +34,11 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to='store/images') #this implementaion will just store the url of the image in the database (and that url aware of the media root we defined in the settings)but the actual image will be soted on the file sys just for preformance reasons as if we store images in the database it will be very big and our queries will be so slow
+    
 class Review(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()

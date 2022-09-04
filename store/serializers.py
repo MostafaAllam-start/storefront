@@ -1,13 +1,24 @@
+from calendar import c
 from decimal import Decimal
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Order, OrderItem, Product, Collection, Review, Cart, CartItem, Customer
+from .models import Order, OrderItem, Product, Collection, ProductImage, Review, Cart, CartItem, Customer
 from .signals import order_created
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image']
+
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImage.objects.create(product_id=product_id, **validated_data)
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     class Meta:
-        fields = ['id', 'title', 'unit_price', 'price_with_tax','description','inventory', 'collection']
+        fields = ['id', 'title', 'unit_price', 'price_with_tax','description','inventory', 'collection', 'images']
         model = Product
 
     def calculate_tax(self, product: Product):

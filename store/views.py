@@ -10,12 +10,20 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .paginations import DefaultPagination
-from .serializers import CreateOrderSerializer, AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer, UpdateOrderSerializer
-from .models import Cart, CartItem, Customer, Order, OrderItem, Product, Collection, Review 
+from .serializers import CreateOrderSerializer, AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, OrderSerializer, ProductImageSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer, UpdateOrderSerializer
+from .models import Cart, CartItem, Customer, Order, OrderItem, Product, Collection, ProductImage, Review 
 from .filters import ProductFilter
 
+class ProductImageViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductImageSerializer
+    
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id = self.kwargs['product_pk'])
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs['product_pk']}
+
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('images').all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter

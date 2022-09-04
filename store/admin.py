@@ -4,7 +4,7 @@ from django.utils.html import format_html, urlencode
 from django.http import HttpRequest
 from django.urls import reverse
 from typing import Optional
-from .models import Cart, CartItem, Collection, Product, Customer, Order, OrderItem
+from .models import Cart, CartItem, Collection, Product, Customer, Order, OrderItem, ProductImage
 from tags.models import TaggedItem
 admin.site.site_header = "StoreFront"
 admin.site.index_title = "Admin"
@@ -37,10 +37,17 @@ class InventoryFilter(admin.SimpleListFilter):
         if self.value() == '<10':
             return queryset.filter(inventory__lt=10)
 
-''
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage 
+    readonly_fields = ['thumbnail']
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html(f'<img src="{instance.image.url}" class="thumbnail"/>')
+        return ''
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     actions = ['clear_inventory',]
+    inlines = [ProductImageInline]
     search_fields = ['title',]
     list_display = ['title', 'description', 'unit_price', 'inventory_status', 'collection_title']
     list_editable = ['unit_price',]
@@ -58,6 +65,11 @@ class ProductAdmin(admin.ModelAdmin):
     def clear_inventory(self, request, queryset):
         updatedProducts = queryset.update(inventory = 0)
         self.message_user(request, f"{updatedProducts} have been updated successfully", messages.SUCCESS)
+
+    class  Media:
+        css = {
+            'all': ['store/style.css']
+        }
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
