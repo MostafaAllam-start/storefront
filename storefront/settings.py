@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': os.environ.get('DATABASE_NAME'),
         'HOST': os.environ.get('HOST'),
         'USER': os.environ.get('USER'),
-        'PASSWORD': os.environ.get('PASSWORD'),
+        'PASSWORD': "1234@@MMfa",
     }
 }
 
