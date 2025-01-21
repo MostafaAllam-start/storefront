@@ -81,7 +81,7 @@
   - pytest
   - pytest-django
   - model-bakery
-  - locust (for application performce testing)
+  - locust (for application performance testing)
 
 ---
 
